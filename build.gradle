@@ -63,7 +63,7 @@ if (project.hasProperty('release')) {
                         authentication(userName: ossrhUser, password: ossrhPassword)
                     }
                     snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                        authentication(userName: ossrhUsername, password: ossrhPassword)
+                        authentication(userName: ossrhUser, password: ossrhPassword)
                     }
                     pom.project {
                         name project.name
