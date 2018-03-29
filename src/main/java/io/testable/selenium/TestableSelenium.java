@@ -22,7 +22,7 @@ public class TestableSelenium {
     public static final String REGION_NAME = System.getProperty("TESTABLE_REGION_NAME");
     public static final String REGIONAL_CLIENT_INDEX = System.getProperty("TESTABLE_REGIONAL_CLIENT_INDEX");
     public static final String ITERATION = System.getProperty("TESTABLE_ITERATION");
-
+    public static final String PROXY_AUTOCONFIG_URL = System.getProperty("TESTABLE_PROXY_AUTOCONFIG_URL");
 
     public static WebDriver newWebDriver(Capabilities capabilities) {
         try {
