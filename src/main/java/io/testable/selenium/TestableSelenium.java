@@ -1,6 +1,7 @@
 package io.testable.selenium;
 
 import org.openqa.selenium.*;
+import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.io.File;
@@ -26,6 +27,12 @@ public class TestableSelenium {
 
     public static WebDriver newWebDriver(Capabilities capabilities) {
         try {
+            if (PROXY_AUTOCONFIG_URL != null && capabilities instanceof MutableCapabilities) {
+                Proxy proxy = new Proxy();
+                proxy.setProxyType(Proxy.ProxyType.PAC);
+                proxy.setProxyAutoconfigUrl(PROXY_AUTOCONFIG_URL);
+                ((MutableCapabilities)capabilities).setCapability(CapabilityType.PROXY, proxy);
+            }
             int port = SELENIUM_PORT > 0 ? SELENIUM_PORT : 4444;
             return new RemoteWebDriver(new URL("http://localhost:" + port + "/wd/hub"), capabilities);
         } catch (MalformedURLException e) {
