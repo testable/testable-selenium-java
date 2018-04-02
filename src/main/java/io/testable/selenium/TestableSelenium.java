@@ -18,12 +18,12 @@ import java.nio.file.Paths;
  */
 public class TestableSelenium {
 
-    public static final int SELENIUM_PORT = Integer.getInteger("TESTABLE_SELENIUM_PORT", -1);
-    public static final String OUTPUT_DIR = System.getProperty("TESTABLE_OUTPUT_DIR");
+    public static final int SELENIUM_PORT = Integer.getInteger("SELENIUM_PORT", -1);
+    public static final String OUTPUT_DIR = System.getProperty("OUTPUT_DIR");
     public static final String REGION_NAME = System.getProperty("TESTABLE_REGION_NAME");
     public static final String REGIONAL_CLIENT_INDEX = System.getProperty("TESTABLE_REGIONAL_CLIENT_INDEX");
     public static final String ITERATION = System.getProperty("TESTABLE_ITERATION");
-    public static final String PROXY_AUTOCONFIG_URL = System.getProperty("TESTABLE_PROXY_AUTOCONFIG_URL");
+    public static final String PROXY_AUTOCONFIG_URL = System.getProperty("PROXY_AUTOCONFIG_URL");
 
     public static WebDriver newWebDriver(Capabilities capabilities) {
         try {
