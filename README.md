@@ -35,3 +35,11 @@ public class TestableExample {
 
 }
 ```
+
+When this example is run outside of Testable it will instantiate a
+`RemoteWebDriver` instance with URL `http://localhost:4444/wd/hub`.
+
+The `takeScreenshot(driver, name)` method will simply take the screenshot and
+return the path when run locally. On the Testable platform it will also
+copy the screenshot into the appropriate output folder to be reported
+back as part of the test results.
