@@ -10,7 +10,7 @@ When developing locally include the following artifact in your build:
 <dependency>
   <groupId>io.testable</groupId>
   <artifactId>testable-selenium-java</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
 </dependency>
 ```
 
