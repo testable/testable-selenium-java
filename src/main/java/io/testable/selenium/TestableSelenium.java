@@ -155,9 +155,10 @@ public class TestableSelenium {
         try {
             ObjectMapper mapper = new ObjectMapper();
             String text = mapper.writeValueAsString(result);
-            if (resultStream != null)
+            if (resultStream != null) {
                 resultStream.println(text);
-            else
+                resultStream.flush();
+            } else
                 System.out.println("[" + result.getType() + "] " + text);
         } catch (JsonProcessingException jpe) {
             throw new RuntimeException(jpe);
