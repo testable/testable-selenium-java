@@ -2,8 +2,11 @@ package io.testable.selenium;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
+import com.google.common.io.Resources;
 import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
@@ -13,6 +16,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Main entry point for creating a selenium driver for use on the Testable platform as well as a set of useful
@@ -26,7 +31,22 @@ public class TestableSelenium {
     public static final String REGIONAL_CLIENT_INDEX = System.getProperty("TESTABLE_REGIONAL_CLIENT_INDEX");
     public static final String ITERATION = System.getProperty("TESTABLE_ITERATION");
     public static final String PROXY_AUTOCONFIG_URL = System.getProperty("PROXY_AUTOCONFIG_URL");
+    public static final String PAC_CHROME_EXTENSION_DIR = System.getProperty("PAC_CHROME_EXTENSION_DIR");
     public static final String RESULT_FILE = System.getProperty("TESTABLE_RESULT_FILE");
+
+
+    private static String RUM_SPEEDINDEXJS;
+    static {
+        try {
+            URL url = Resources.getResource("rum-speedindex.js");
+            RUM_SPEEDINDEXJS = Resources.toString(url, Charsets.UTF_8);
+        } catch(Exception e) {
+            System.out.println("Issue reading rum-speedindex.js from file");
+            e.printStackTrace();
+            RUM_SPEEDINDEXJS = null;
+        }
+    }
+
 
     private static PrintWriter resultStream;
     static {
@@ -54,6 +74,9 @@ public class TestableSelenium {
                 proxy.setProxyType(Proxy.ProxyType.PAC);
                 proxy.setProxyAutoconfigUrl(PROXY_AUTOCONFIG_URL);
                 ((MutableCapabilities)capabilities).setCapability(CapabilityType.PROXY, proxy);
+                if (capabilities instanceof ChromeOptions && PAC_CHROME_EXTENSION_DIR != null) {
+                    ((ChromeOptions)capabilities).addArguments("--load-extension=" + PAC_CHROME_EXTENSION_DIR);
+                }
             }
             int port = SELENIUM_PORT > 0 ? SELENIUM_PORT : 4444;
             return new RemoteWebDriver(new URL("http://localhost:" + port + "/wd/hub"), capabilities);
@@ -129,6 +152,22 @@ public class TestableSelenium {
     public static void log(TestableLog.Level level, Throwable cause) {
         String msg = Throwables.getStackTraceAsString(cause);
         writeToStream(new Result("Log", new TestableLog(level, msg, System.currentTimeMillis())));
+    }
+
+    /**
+     * Collect some useful browser performance metrics by executing some Javascript in the browser. Metrics
+     * include: page load time, speed index, page requests, page weight, time to first byte, time to first paint,
+     * time to first contentful paint, and time to interactive.
+     *
+     * @param driver The WebDriver instance
+     */
+    public static Map<String,Object> collectPerformanceMetrics(WebDriver driver) {
+        if (RUM_SPEEDINDEXJS != null) {
+            Map<String, Object> results = (Map<String, Object>) ((JavascriptExecutor) driver).executeScript(RUM_SPEEDINDEXJS);
+            writeToStream(new Result("BrowserMetrics", results));
+            return results;
+        }
+        return Collections.emptyMap();
     }
 
     /**

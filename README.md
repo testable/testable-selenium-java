@@ -5,6 +5,7 @@
   * [Custom Metrics](#custom-metrics)
   * [Logging](#logging)
   * [Read from CSV](#read-from-csv)
+  * [Browser Performance Metrics](#browser-performance-metrics)
 
 # Introduction
 
@@ -18,7 +19,7 @@ When developing locally include the following artifact in your build:
 <dependency>
   <groupId>io.testable</groupId>
   <artifactId>testable-selenium-java</artifactId>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
 </dependency>
 ```
 
@@ -173,4 +174,20 @@ virtual users that are part of your test execution.
 TestableCSVReader reader = TestableSelenium.readCsv("credentials.csv");
 CSVRecord record = reader.next();
 System.out.println(record.get("username"));
+```
+
+## Browser Performance Metrics
+
+Testable provides an API for extracting a bunch of useful browser performance
+metrics into your test results including: page load time, speed index,
+page requests, page weight, time to first byte, time to first paint,
+time to first contentful paint, and time to interactive. See our
+[metrics glossary](https://docs.testable.io/guides/metrics.html) for a
+precise definition of each metric.
+
+The method also returns a Map of all metrics captured in addition to
+automatically reporting it back into the test results.
+
+```java
+TestableSelenium.collectPerformanceMetrics(driver);
 ```
