@@ -7,6 +7,7 @@ import com.google.common.base.Throwables;
 import com.google.common.io.Resources;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
@@ -70,12 +71,26 @@ public class TestableSelenium {
     public static WebDriver newWebDriver(Capabilities capabilities) {
         try {
             if (PROXY_AUTOCONFIG_URL != null && capabilities instanceof MutableCapabilities) {
-                Proxy proxy = new Proxy();
-                proxy.setProxyType(Proxy.ProxyType.PAC);
-                proxy.setProxyAutoconfigUrl(PROXY_AUTOCONFIG_URL);
-                ((MutableCapabilities)capabilities).setCapability(CapabilityType.PROXY, proxy);
                 if (capabilities instanceof ChromeOptions && PAC_CHROME_EXTENSION_DIR != null) {
-                    ((ChromeOptions)capabilities).addArguments("--load-extension=" + PAC_CHROME_EXTENSION_DIR);
+                    ChromeOptions opts = (ChromeOptions)capabilities;
+                    opts.addArguments("--proxy-pac-url=" + PROXY_AUTOCONFIG_URL);
+                    opts.addArguments("--load-extension=" + PAC_CHROME_EXTENSION_DIR);
+                } else if (capabilities instanceof FirefoxOptions) {
+                    FirefoxOptions opts = (FirefoxOptions)capabilities;
+                    opts.addArguments("-headless");
+                    opts.addPreference("browser.tabs.remote.autostart", false);
+                    opts.addPreference("browser.tabs.remote.autostart.2", false);
+                    opts.addPreference("dom.webnotifications.enabled", false);
+                    opts.addPreference("dom.push.connection.enabled", false);
+                    opts.addPreference("dom.push.enabled", false);
+                    opts.addPreference("dom.push.alwaysConnect", false);
+                    opts.addPreference("network.proxy.type", 2);
+                    opts.addPreference("network.proxy.autoconfig_url", PROXY_AUTOCONFIG_URL);
+                    opts.addPreference("browser.startup.page", 0);
+                    opts.addPreference("network.captive-portal-service.enabled", false);
+                    opts.addPreference("browser.newtabpage.activity-stream.disableSnippets", true);
+                    opts.addPreference("browser.newtabpage.activity-stream.feeds.snippets", false);
+                    opts.addPreference("services.sync.prefs.sync.browser.newtabpage.activity-stream.feeds.snippets", false);
                 }
             }
             int port = SELENIUM_PORT > 0 ? SELENIUM_PORT : 4444;
