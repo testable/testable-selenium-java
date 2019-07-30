@@ -71,10 +71,9 @@ public class TestableSelenium {
     public static WebDriver newWebDriver(Capabilities capabilities) {
         try {
             if (PROXY_AUTOCONFIG_URL != null && capabilities instanceof MutableCapabilities) {
-                if (capabilities instanceof ChromeOptions && PAC_CHROME_EXTENSION_DIR != null) {
+                if (capabilities instanceof ChromeOptions) {
                     ChromeOptions opts = (ChromeOptions)capabilities;
                     opts.addArguments("--proxy-pac-url=" + PROXY_AUTOCONFIG_URL);
-                    opts.addArguments("--load-extension=" + PAC_CHROME_EXTENSION_DIR);
                 } else if (capabilities instanceof FirefoxOptions) {
                     FirefoxOptions opts = (FirefoxOptions)capabilities;
                     opts.addArguments("-headless");
