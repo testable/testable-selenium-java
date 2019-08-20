@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class TestableMetric {
 
-    public enum Type { Timing, Counter, Histogram }
+    public enum Type { Timing, Counter, Histogram, Metered }
 
     private Type type;
     private String resource;
@@ -76,6 +76,10 @@ public class TestableMetric {
 
     public static Builder newHistogramBuilder() {
         return new Builder(Type.Histogram);
+    }
+
+    public static Builder newMeteredBuilder() {
+        return new Builder(Type.Metered);
     }
 
     public static Builder newBuilder(Type type) {
