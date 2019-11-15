@@ -70,8 +70,8 @@ public class TestableSelenium {
      */
     public static WebDriver newWebDriver(Capabilities capabilities) {
         try {
-            if (PROXY_AUTOCONFIG_URL != null && capabilities instanceof MutableCapabilities) {
-                if (capabilities instanceof ChromeOptions) {
+            if (capabilities instanceof MutableCapabilities) {
+                if (PROXY_AUTOCONFIG_URL != null && capabilities instanceof ChromeOptions) {
                     ChromeOptions opts = (ChromeOptions)capabilities;
                     opts.addArguments("--proxy-pac-url=" + PROXY_AUTOCONFIG_URL);
                 } else if (capabilities instanceof FirefoxOptions) {
@@ -83,8 +83,10 @@ public class TestableSelenium {
                     opts.addPreference("dom.push.connection.enabled", false);
                     opts.addPreference("dom.push.enabled", false);
                     opts.addPreference("dom.push.alwaysConnect", false);
-                    opts.addPreference("network.proxy.type", 2);
-                    opts.addPreference("network.proxy.autoconfig_url", PROXY_AUTOCONFIG_URL);
+                    if (PROXY_AUTOCONFIG_URL != null) {
+                        opts.addPreference("network.proxy.type", 2);
+                        opts.addPreference("network.proxy.autoconfig_url", PROXY_AUTOCONFIG_URL);
+                    }
                     opts.addPreference("browser.startup.page", 0);
                     opts.addPreference("network.captive-portal-service.enabled", false);
                     opts.addPreference("browser.newtabpage.activity-stream.disableSnippets", true);
