@@ -29,7 +29,7 @@ public class TestableSelenium {
     public static final int SELENIUM_PORT = Integer.getInteger("SELENIUM_PORT", -1);
     public static final String OUTPUT_DIR = System.getProperty("OUTPUT_DIR");
     public static final String REGION_NAME = System.getProperty("TESTABLE_REGION_NAME");
-    public static final String REGIONAL_CLIENT_INDEX = System.getProperty("TESTABLE_REGIONAL_CLIENT_INDEX");
+    public static final String GLOBAL_CLIENT_INDEX = System.getProperty("TESTABLE_GLOBAL_CLIENT_INDEX");
     public static final String ITERATION = System.getProperty("TESTABLE_ITERATION");
     public static final String PROXY_AUTOCONFIG_URL = System.getProperty("PROXY_AUTOCONFIG_URL");
     public static final String PAC_CHROME_EXTENSION_DIR = System.getProperty("PAC_CHROME_EXTENSION_DIR");
@@ -208,7 +208,7 @@ public class TestableSelenium {
 
     private static String toName(String name) {
         if (REGION_NAME != null) {
-            return REGION_NAME + "-" + REGIONAL_CLIENT_INDEX + "-" + ITERATION + "-" + name;
+            return REGION_NAME + "-" + GLOBAL_CLIENT_INDEX + "-" + ITERATION + "-" + name;
         } else {
             return name;
         }
