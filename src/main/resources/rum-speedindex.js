@@ -316,6 +316,12 @@ var PageSpeedMetrics = function() {
     answer.pageLoadMs = perfTiming.loadEventEnd - perfTiming.connectStart;
     answer.url = window.location.href;
   }
+  var memory = win.performance.memory;
+  if (memory) {
+    answer.jsHeapSizeLimit = memory.jsHeapSizeLimit;
+    answer.totalJSHeapSize = memory.totalJSHeapSize;
+    answer.usedJSHeapSize = memory.usedJSHeapSize;
+  }
   return answer;
 }
 
