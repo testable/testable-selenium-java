@@ -17,10 +17,10 @@ repositories {
 }
 
 dependencies {
-    implementation group:'org.seleniumhq.selenium', name: 'selenium-java', version: '3.11.0'
-    implementation group:'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.1'
-    implementation group:'org.apache.commons', name: 'commons-csv', version: '1.5'
-    testImplementation group: 'junit', name: 'junit', version: '4.11'
+    implementation 'org.seleniumhq.selenium:selenium-java:3.11.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.1'
+    implementation 'org.apache.commons:commons-csv:1.5'
+    testImplementation 'junit:junit:4.13'
 }
 
 task fatJar(type: Jar) {
