@@ -12,6 +12,10 @@ buildscript {
 apply plugin: 'io.codearte.nexus-staging'
 apply plugin: 'java'
 
+plugins {
+    id "us.kirchmeier.capsule" version "1.0.2"
+}
+
 repositories {
     mavenCentral()
 }
@@ -23,10 +27,8 @@ dependencies {
     testCompile 'junit:junit:4.13'
 }
 
-task fatJar(type: Jar) {
-    archiveBaseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
+task fatCapsule(type: FatCapsule) {
+    archiveName = project.name + '-all'
 }
 
 task javadocJar(type: Jar) {
