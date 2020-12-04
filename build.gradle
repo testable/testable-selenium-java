@@ -1,3 +1,6 @@
+group 'io.testable'
+version '0.0.10'
+
 buildscript {
     repositories {
         mavenCentral()
@@ -8,10 +11,6 @@ buildscript {
 }
 apply plugin: 'io.codearte.nexus-staging'
 apply plugin: 'java'
-apply plugin: 'gradle-one-jar'
-
-group = 'io.testable'
-version = '0.0.10'
 
 repositories {
     mavenCentral()
@@ -24,8 +23,10 @@ dependencies {
     testCompile 'junit:junit:4.13'
 }
 
-task oneJar(type: OneJar) {
-    archiveName = project.name + '-all.jar'
+task fatJar(type: Jar) {
+    archivesBaseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
 task javadocJar(type: Jar) {
