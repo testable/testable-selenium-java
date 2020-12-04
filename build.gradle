@@ -6,11 +6,9 @@ buildscript {
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
     }
 }
-plugins {
-    id "us.kirchmeier.capsule" version "1.0.2"
-}
 apply plugin: 'io.codearte.nexus-staging'
 apply plugin: 'java'
+apply plugin: 'gradle-one-jar'
 
 group = 'io.testable'
 version = '0.0.10'
@@ -26,8 +24,8 @@ dependencies {
     testCompile 'junit:junit:4.13'
 }
 
-task fatCapsule(type: FatCapsule) {
-    archiveName = project.name + '-all'
+task oneJar(type: OneJar) {
+    archiveName = project.name + '-all.jar'
 }
 
 task javadocJar(type: Jar) {
