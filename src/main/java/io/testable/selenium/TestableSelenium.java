@@ -32,7 +32,9 @@ public class TestableSelenium {
     public static final String GLOBAL_CLIENT_INDEX = System.getProperty("TESTABLE_GLOBAL_CLIENT_INDEX");
     public static final String ITERATION = System.getProperty("TESTABLE_ITERATION");
     public static final String PROXY_AUTOCONFIG_URL = System.getProperty("PROXY_AUTOCONFIG_URL");
-    public static final String PAC_CHROME_EXTENSION_DIR = System.getProperty("PAC_CHROME_EXTENSION_DIR");
+    public static final String CHROME_BINARY_PATH = System.getProperty("CHROME_BINARY_PATH");
+    public static final String FIREFOX_BINARY_PATH = System.getProperty("FIREFOX_BINARY_PATH");
+    public static final String PROFILE_DIR = System.getProperty("TESTABLE_PROFILE_DIR");
     public static final String RESULT_FILE = System.getProperty("TESTABLE_RESULT_FILE");
 
 
@@ -81,6 +83,10 @@ public class TestableSelenium {
                             "--no-sandbox",
                             "--whitelisted-ips",
                             "--enable-precise-memory-info");
+                    if (PROFILE_DIR != null)
+                        opts.addArguments("--user-data-dir=" + PROFILE_DIR);
+                    if (CHROME_BINARY_PATH != null)
+                        opts.setBinary(CHROME_BINARY_PATH);
                 } else if (capabilities instanceof FirefoxOptions) {
                     FirefoxOptions opts = (FirefoxOptions)capabilities;
                     opts.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
@@ -100,6 +106,8 @@ public class TestableSelenium {
                     opts.addPreference("browser.newtabpage.activity-stream.disableSnippets", true);
                     opts.addPreference("browser.newtabpage.activity-stream.feeds.snippets", false);
                     opts.addPreference("services.sync.prefs.sync.browser.newtabpage.activity-stream.feeds.snippets", false);
+                    if (FIREFOX_BINARY_PATH != null)
+                        opts.setBinary(FIREFOX_BINARY_PATH);
                 }
             }
             int port = SELENIUM_PORT > 0 ? SELENIUM_PORT : 4444;
