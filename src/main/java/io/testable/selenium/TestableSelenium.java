@@ -90,7 +90,6 @@ public class TestableSelenium {
                 } else if (capabilities instanceof FirefoxOptions) {
                     FirefoxOptions opts = (FirefoxOptions)capabilities;
                     opts.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
-                    opts.addArguments("-headless");
                     opts.addPreference("browser.tabs.remote.autostart", false);
                     opts.addPreference("browser.tabs.remote.autostart.2", false);
                     opts.addPreference("dom.webnotifications.enabled", false);
