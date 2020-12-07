@@ -85,6 +85,7 @@ public class TestableSelenium {
                             "--enable-precise-memory-info");
                     if (PROFILE_DIR != null)
                         opts.addArguments("--user-data-dir=" + PROFILE_DIR);
+                    opts.addArguments("--profile-directory=Profile" + GLOBAL_CLIENT_INDEX);
                     if (CHROME_BINARY_PATH != null)
                         opts.setBinary(CHROME_BINARY_PATH);
                 } else if (capabilities instanceof FirefoxOptions) {
