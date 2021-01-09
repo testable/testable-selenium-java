@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.seleniumhq.selenium:selenium-java:3.11.0'
+    compile 'org.seleniumhq.selenium:selenium-java:3.141.59'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.11.1'
     compile 'org.apache.commons:commons-csv:1.5'
     testCompile 'junit:junit:4.13'
@@ -27,6 +27,10 @@ task fatJar(type: Jar) {
     archivesBaseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
+}
+
+task singleJar(type: Jar) {
+    archivesBaseName = project.name
 }
 
 task javadocJar(type: Jar) {
