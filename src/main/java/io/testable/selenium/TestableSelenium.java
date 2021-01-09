@@ -82,7 +82,8 @@ public class TestableSelenium {
                             "--disable-gpu",
                             "--no-sandbox",
                             "--whitelisted-ips",
-                            "--enable-precise-memory-info");
+                            "--enable-precise-memory-info",
+                            "--ignore-certificate-errors");
                     if (PROFILE_DIR != null)
                         opts.addArguments("--user-data-dir=" + PROFILE_DIR);
                     opts.addArguments("--profile-directory=Profile" + GLOBAL_CLIENT_INDEX);
