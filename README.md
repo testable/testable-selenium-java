@@ -2,6 +2,7 @@
 * [Getting Started](#getting-started)
 * [API](#api)
   * [Screenshots](#screenshots)
+  * [Assertions/Test Steps](#assertions)
   * [Custom Metrics](#custom-metrics)
   * [Logging](#logging)
   * [Read from CSV](#read-from-csv)
@@ -73,6 +74,26 @@ public class TestableExample {
     }
 
 }
+```
+
+### Assertions/Test Steps
+
+Capture assertions or test steps as part of the test results including test step description, 
+duration, and any errors that occurred.
+
+In the results you can see these within the Assertions widget. For example:
+
+```java
+TestableTest test = TestableSelenium.startTest("Google Related");
+test.startStep("Open google home page");
+driver.get("https://www.google.com");
+test.finishSuccessfulStep(); // or test.finishFailedStep("My error message");
+test.runStep("Open google news using Runnable", new Runnable() {
+    public void run() {
+        driver.get("https://news.google.com"); // any exception here gets logged as a test step failure
+    }
+});
+test.finish();
 ```
 
 ## Custom Metrics

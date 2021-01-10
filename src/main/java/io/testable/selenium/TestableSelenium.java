@@ -215,6 +215,18 @@ public class TestableSelenium {
         return new TestableCSVReader(path);
     }
 
+    /**
+     * Start a new set of test steps that you want to record and view in the Assertions widget within the Testable
+     * test results. Allows you to track a series of test steps, whether they pass, any errors that occurred, and the
+     * duration of each step.
+     *
+     * @param name The name of the test.
+     * @return An object that lets you record test steps and their outcome
+     */
+    public static TestableTest startTest(String name) {
+        return new TestableTest(name);
+    }
+
     private static String toName(String name) {
         if (REGION_NAME != null) {
             return REGION_NAME + "-" + GLOBAL_CLIENT_INDEX + "-" + ITERATION + "-" + name;
@@ -223,7 +235,7 @@ public class TestableSelenium {
         }
     }
 
-    private static void writeToStream(Result result) {
+    static void writeToStream(Result result) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             String text = mapper.writeValueAsString(result);
@@ -237,7 +249,7 @@ public class TestableSelenium {
         }
     }
 
-    private static class Result {
+    static class Result {
         private String type;
         private Object data;
 

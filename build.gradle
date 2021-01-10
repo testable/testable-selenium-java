@@ -24,14 +24,10 @@ dependencies {
 }
 
 task fatJar(type: Jar) {
-    archivesBaseName = project.name + '-all'
+    archiveName = project.name + '-all-' + project.version + '.jar'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
 }
 
-task singleJar(type: Jar) {
-    archivesBaseName = project.name
-}
 
 task javadocJar(type: Jar) {
     classifier = 'javadoc'
