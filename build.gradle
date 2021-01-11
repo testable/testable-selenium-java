@@ -26,6 +26,7 @@ dependencies {
 task fatJar(type: Jar) {
     archiveName = project.name + '-all-' + project.version + '.jar'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
 
