@@ -8,7 +8,9 @@ import com.google.common.io.Resources;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.io.*;
@@ -72,9 +74,25 @@ public class TestableSelenium {
      */
     public static WebDriver newWebDriver(Capabilities capabilities) {
         try {
-            if (capabilities instanceof MutableCapabilities) {
-                if (PROXY_AUTOCONFIG_URL != null && capabilities instanceof ChromeOptions) {
-                    ChromeOptions opts = (ChromeOptions)capabilities;
+            Capabilities caps;
+            if (capabilities instanceof DesiredCapabilities) {
+                DesiredCapabilities desiredCapabilities = (DesiredCapabilities) capabilities;
+                String browserName = desiredCapabilities.getBrowserName();
+                if (browserName == null)
+                    throw new RuntimeException("DesiredCapabilities with no browser passed");
+                if (browserName.equals(BrowserType.CHROME))
+                    caps = new ChromeOptions();
+                else if (browserName.equals(BrowserType.FIREFOX))
+                    caps = new FirefoxOptions();
+                else
+                    throw new RuntimeException("Currently only Chrome and Firefox are supported on Testable");
+                caps.merge(desiredCapabilities);
+            } else {
+                caps = capabilities;
+            }
+            if (caps instanceof MutableCapabilities) {
+                if (PROXY_AUTOCONFIG_URL != null && caps instanceof ChromeOptions) {
+                    ChromeOptions opts = (ChromeOptions)caps;
                     opts.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
                     opts.addArguments(
                             "--proxy-pac-url=" + PROXY_AUTOCONFIG_URL,
@@ -89,8 +107,8 @@ public class TestableSelenium {
                     opts.addArguments("--profile-directory=Profile" + GLOBAL_CLIENT_INDEX);
                     if (CHROME_BINARY_PATH != null)
                         opts.setBinary(CHROME_BINARY_PATH);
-                } else if (capabilities instanceof FirefoxOptions) {
-                    FirefoxOptions opts = (FirefoxOptions)capabilities;
+                } else if (caps instanceof FirefoxOptions) {
+                    FirefoxOptions opts = (FirefoxOptions)caps;
                     opts.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
                     opts.addPreference("browser.tabs.remote.autostart", false);
                     opts.addPreference("browser.tabs.remote.autostart.2", false);
@@ -112,7 +130,7 @@ public class TestableSelenium {
                 }
             }
             int port = SELENIUM_PORT > 0 ? SELENIUM_PORT : 4444;
-            return new RemoteWebDriver(new URL("http://localhost:" + port + "/wd/hub"), capabilities);
+            return new RemoteWebDriver(new URL("http://localhost:" + port + "/wd/hub"), caps);
         } catch (MalformedURLException e) {
             throw new WebDriverException(e);
         }
