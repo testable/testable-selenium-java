@@ -41,7 +41,6 @@ public class TestableSelenium {
     public static final String RESULT_FILE = System.getProperty("TESTABLE_RESULT_FILE");
 
     public static final String DISPLAY_SIZE = System.getProperty("DISPLAY_SIZE");
-    public static final String DEVICE_LANDSCAPE = System.getProperty("DEVICE_LANDSCAPE");
     public static final String USER_AGENT = System.getProperty("USER_AGENT");
     public static final String SCALE_FACTOR = System.getProperty("SCALE_FACTOR");
 
@@ -115,26 +114,16 @@ public class TestableSelenium {
 
                     if (DISPLAY_SIZE != null) {
                         String[] screenSize = DISPLAY_SIZE.split("x", -1);
-                        Float isLandscape = Float.parseFloat(DEVICE_LANDSCAPE);
-                        if(isLandscape == 0)
-                            opts.addArguments("--window-size=" + screenSize[0] + "," + screenSize[1]);
-                        else
-                            opts.addArguments("--window-size=" + screenSize[1] + "," + screenSize[0]);
+                        opts.addArguments("--window-size=" + screenSize[0] + "," + screenSize[1]);
                     }
 
                     if(USER_AGENT != null){
                         String[] screenSize = DISPLAY_SIZE.split("x", -1);
-                        Float isLandscape = Float.parseFloat(DEVICE_LANDSCAPE);
 
                         Map<String, Object> deviceMetrics = new HashMap<>();
 
-                        if(isLandscape == 0) {
-                            deviceMetrics.put("width", Float.parseFloat(screenSize[0]));
-                            deviceMetrics.put("height", Float.parseFloat(screenSize[1]));
-                        }else{
-                            deviceMetrics.put("width", Float.parseFloat(screenSize[1]));
-                            deviceMetrics.put("height", Float.parseFloat(screenSize[0]));
-                        }
+                        deviceMetrics.put("width", Float.parseFloat(screenSize[0]));
+                        deviceMetrics.put("height", Float.parseFloat(screenSize[1]));
 
                         deviceMetrics.put("pixelRatio", Float.parseFloat(SCALE_FACTOR));
 
@@ -175,15 +164,8 @@ public class TestableSelenium {
 
                     if(DISPLAY_SIZE != null) {
                         String[] screenSize = DISPLAY_SIZE.split("x", -1);
-                        Float isLandscape = Float.parseFloat(DEVICE_LANDSCAPE);
-
-                        if(isLandscape == 0) {
-                            opts.addArguments("--width", screenSize[0]);
-                            opts.addArguments("--height", screenSize[1]);
-                        }else{
-                            opts.addArguments("--width", screenSize[1]);
-                            opts.addArguments("--height", screenSize[0]);
-                        }
+                        opts.addArguments("--width", screenSize[0]);
+                        opts.addArguments("--height", screenSize[1]);
                     }
                 }
             }
