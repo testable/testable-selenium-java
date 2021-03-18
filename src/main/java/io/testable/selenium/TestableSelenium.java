@@ -112,18 +112,38 @@ public class TestableSelenium {
 
                     opts.addArguments("--window-position=0,0");
 
+                    if(SCALE_FACTOR != null) {
+                        opts.addArguments("--force-device-scale-factor=" + SCALE_FACTOR);
+                        opts.addArguments("--high-dpi-support=" + SCALE_FACTOR);
+                    }
+
                     if (DISPLAY_SIZE != null) {
                         String[] screenSize = DISPLAY_SIZE.split("x", -1);
-                        opts.addArguments("--window-size=" + screenSize[0] + "," + screenSize[1]);
+                        Float width = Float.parseFloat(screenSize[0]);
+                        Float height = Float.parseFloat(screenSize[1]);
+
+                        if (SCALE_FACTOR != null) {
+                            width = width / Float.parseFloat(SCALE_FACTOR);
+                            height = height / Float.parseFloat(SCALE_FACTOR);
+                        }
+
+                        opts.addArguments("--window-size=" + Math.round(width) + "," + Math.round(height));
                     }
 
                     if(USER_AGENT != null){
                         String[] screenSize = DISPLAY_SIZE.split("x", -1);
+                        Float width = Float.parseFloat(screenSize[0]);
+                        Float height = Float.parseFloat(screenSize[1]);
+
+                        if (SCALE_FACTOR != null) {
+                            width = width / Float.parseFloat(SCALE_FACTOR);
+                            height = height / Float.parseFloat(SCALE_FACTOR);
+                        }
 
                         Map<String, Object> deviceMetrics = new HashMap<>();
 
-                        deviceMetrics.put("width", Float.parseFloat(screenSize[0]));
-                        deviceMetrics.put("height", Float.parseFloat(screenSize[1]));
+                        deviceMetrics.put("width", Math.round(width));
+                        deviceMetrics.put("height", Math.round(height));
 
                         deviceMetrics.put("pixelRatio", Float.parseFloat(SCALE_FACTOR));
 
@@ -162,10 +182,19 @@ public class TestableSelenium {
                         opts.addPreference("layout.css.devPixelsPerPx", SCALE_FACTOR);
                     }
 
-                    if(DISPLAY_SIZE != null) {
+                    if (DISPLAY_SIZE != null) {
                         String[] screenSize = DISPLAY_SIZE.split("x", -1);
-                        opts.addArguments("--width", screenSize[0]);
-                        opts.addArguments("--height", screenSize[1]);
+
+                        Float width = Float.parseFloat(screenSize[0]);
+                        Float height = Float.parseFloat(screenSize[1]);
+
+                        if (SCALE_FACTOR != null) {
+                            width = width / Float.parseFloat(SCALE_FACTOR);
+                            height = height / Float.parseFloat(SCALE_FACTOR);
+                        }
+
+                        opts.addArguments("--width", "" + Math.round(width));
+                        opts.addArguments("--height", "" + Math.round(height));
                     }
                 }
             }
