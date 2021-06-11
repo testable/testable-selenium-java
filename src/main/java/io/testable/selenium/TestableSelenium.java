@@ -208,8 +208,8 @@ public class TestableSelenium {
                         opts.addArguments("--height", "" + Math.round(height));
                     }
                 } else if (PROXY_AUTOCONFIG_URL != null && caps instanceof EdgeOptions) {
-                    EdgeOptions opts = (EdgeOptions)caps;
-                    opts.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
+                    EdgeOptions edgeOptions = (EdgeOptions)caps;
+                    edgeOptions.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
 
                     List<String> args = new ArrayList<>();
                     Map<String, Object> experimentalOptions = new HashMap<>();
@@ -277,7 +277,7 @@ public class TestableSelenium {
 
                     options.put("args", ImmutableList.copyOf(args));
 
-                    opts.setCapability("ms:edgeOptions", options);
+                    edgeOptions.setCapability("ms:edgeOptions", options);
                 }
             }
             int port = SELENIUM_PORT > 0 ? SELENIUM_PORT : 4444;
