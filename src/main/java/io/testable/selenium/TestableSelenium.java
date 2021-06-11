@@ -231,7 +231,7 @@ public class TestableSelenium {
 
                     if(SCALE_FACTOR != null) {
                         args.add("--force-device-scale-factor=" + SCALE_FACTOR);
-                        args.add("--high-dpi-support=" + SCALE_FACTOR);
+//                        args.add("--high-dpi-support=" + SCALE_FACTOR);
                     }
 
                     if (DISPLAY_SIZE != null) {
@@ -244,7 +244,7 @@ public class TestableSelenium {
                             height = height / Float.parseFloat(SCALE_FACTOR);
                         }
 
-                        args.add("--window-size=" + Math.round(width) + "," + Math.round(height));
+//                        args.add("--window-size=" + Math.round(width) + "," + Math.round(height));
                     }
 
                     if(USER_AGENT != null){
@@ -268,11 +268,12 @@ public class TestableSelenium {
                         mobileEmulation.put("deviceMetrics", deviceMetrics);
                         mobileEmulation.put("userAgent", USER_AGENT);
 
+                        //todo: not sure how to push this one
                         experimentalOptions.put(checkNotNull("mobileEmulation"), mobileEmulation);
                     }
 
                     if (EDGE_BINARY_PATH != null)
-                        options.put("binary", EDGE_BINARY_PATH);
+                        options.put("binary", EDGE_BINARY_PATH); // todo: need to test if it truly dues work
 
                     options.put("args", ImmutableList.copyOf(args));
 
