@@ -244,7 +244,7 @@ public class TestableSelenium {
                             height = height / Float.parseFloat(SCALE_FACTOR);
                         }
 
-//                        args.add("--window-size=" + Math.round(width) + "," + Math.round(height));
+                        args.add("--window-size=" + Math.round(width) + "," + Math.round(height));
                     }
 
                     if(USER_AGENT != null){
