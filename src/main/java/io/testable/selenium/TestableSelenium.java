@@ -146,19 +146,17 @@ public class TestableSelenium {
                         Float width = Float.parseFloat(screenSize[0]);
                         Float height = Float.parseFloat(screenSize[1]);
 
+                        Map<String, Object> mobileEmulation = new HashMap<>();
+                        Map<String, Object> deviceMetrics = new HashMap<>();
+
                         if (SCALE_FACTOR != null) {
                             width = width / Float.parseFloat(SCALE_FACTOR);
                             height = height / Float.parseFloat(SCALE_FACTOR);
+
+                            deviceMetrics.put("width", Math.round(width));
+                            deviceMetrics.put("height", Math.round(height));
+                            deviceMetrics.put("pixelRatio", Float.parseFloat(SCALE_FACTOR));
                         }
-
-                        Map<String, Object> deviceMetrics = new HashMap<>();
-
-                        deviceMetrics.put("width", Math.round(width));
-                        deviceMetrics.put("height", Math.round(height));
-
-                        deviceMetrics.put("pixelRatio", Float.parseFloat(SCALE_FACTOR));
-
-                        Map<String, Object> mobileEmulation = new HashMap<>();
                         mobileEmulation.put("deviceMetrics", deviceMetrics);
                         mobileEmulation.put("userAgent", USER_AGENT);
 
@@ -231,7 +229,6 @@ public class TestableSelenium {
 
                     if(SCALE_FACTOR != null) {
                         args.add("--force-device-scale-factor=" + SCALE_FACTOR);
-//                        args.add("--high-dpi-support=" + SCALE_FACTOR);
                     }
 
                     if (DISPLAY_SIZE != null) {
@@ -252,28 +249,25 @@ public class TestableSelenium {
                         Float width = Float.parseFloat(screenSize[0]);
                         Float height = Float.parseFloat(screenSize[1]);
 
+                        Map<String, Object> deviceMetrics = new HashMap<>();
+
                         if (SCALE_FACTOR != null) {
                             width = width / Float.parseFloat(SCALE_FACTOR);
                             height = height / Float.parseFloat(SCALE_FACTOR);
+                            deviceMetrics.put("width", Math.round(width));
+                            deviceMetrics.put("height", Math.round(height));
+                            deviceMetrics.put("pixelRatio", Float.parseFloat(SCALE_FACTOR));
                         }
-
-                        Map<String, Object> deviceMetrics = new HashMap<>();
-
-                        deviceMetrics.put("width", Math.round(width));
-                        deviceMetrics.put("height", Math.round(height));
-
-                        deviceMetrics.put("pixelRatio", Float.parseFloat(SCALE_FACTOR));
 
                         Map<String, Object> mobileEmulation = new HashMap<>();
                         mobileEmulation.put("deviceMetrics", deviceMetrics);
                         mobileEmulation.put("userAgent", USER_AGENT);
 
-                        //todo: not sure how to push this one
-                        experimentalOptions.put(checkNotNull("mobileEmulation"), mobileEmulation);
+                        options.put("mobileEmulation", mobileEmulation);
                     }
 
                     if (EDGE_BINARY_PATH != null)
-                        options.put("binary", EDGE_BINARY_PATH); // todo: need to test if it truly dues work
+                        options.put("binary", EDGE_BINARY_PATH);
 
                     options.put("args", ImmutableList.copyOf(args));
 
