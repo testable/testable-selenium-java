@@ -4,10 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -22,6 +24,12 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.TreeMap;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
 
 /**
  * Main entry point for creating a selenium driver for use on the Testable platform as well as a set of useful
@@ -37,6 +45,7 @@ public class TestableSelenium {
     public static final String PROXY_AUTOCONFIG_URL = System.getProperty("PROXY_AUTOCONFIG_URL");
     public static final String CHROME_BINARY_PATH = System.getProperty("CHROME_BINARY_PATH");
     public static final String FIREFOX_BINARY_PATH = System.getProperty("FIREFOX_BINARY_PATH");
+    public static final String EDGE_BINARY_PATH = System.getProperty("EDGE_BINARY_PATH");
     public static final String PROFILE_DIR = System.getProperty("TESTABLE_PROFILE_DIR");
     public static final String RESULT_FILE = System.getProperty("TESTABLE_RESULT_FILE");
 
@@ -88,8 +97,10 @@ public class TestableSelenium {
                     caps = new ChromeOptions();
                 else if (browserName.equals(BrowserType.FIREFOX))
                     caps = new FirefoxOptions();
+                else if (browserName.equals(BrowserType.EDGE))
+                    caps = new EdgeOptions();
                 else
-                    throw new RuntimeException("Currently only Chrome and Firefox are supported on Testable");
+                    throw new RuntimeException("Currently only Chrome, Firefox and Edge are supported on Testable");
                 caps.merge(desiredCapabilities);
             } else {
                 caps = capabilities;
@@ -135,19 +146,17 @@ public class TestableSelenium {
                         Float width = Float.parseFloat(screenSize[0]);
                         Float height = Float.parseFloat(screenSize[1]);
 
+                        Map<String, Object> mobileEmulation = new HashMap<>();
+                        Map<String, Object> deviceMetrics = new HashMap<>();
+
                         if (SCALE_FACTOR != null) {
                             width = width / Float.parseFloat(SCALE_FACTOR);
                             height = height / Float.parseFloat(SCALE_FACTOR);
+
+                            deviceMetrics.put("width", Math.round(width));
+                            deviceMetrics.put("height", Math.round(height));
+                            deviceMetrics.put("pixelRatio", Float.parseFloat(SCALE_FACTOR));
                         }
-
-                        Map<String, Object> deviceMetrics = new HashMap<>();
-
-                        deviceMetrics.put("width", Math.round(width));
-                        deviceMetrics.put("height", Math.round(height));
-
-                        deviceMetrics.put("pixelRatio", Float.parseFloat(SCALE_FACTOR));
-
-                        Map<String, Object> mobileEmulation = new HashMap<>();
                         mobileEmulation.put("deviceMetrics", deviceMetrics);
                         mobileEmulation.put("userAgent", USER_AGENT);
 
@@ -196,6 +205,73 @@ public class TestableSelenium {
                         opts.addArguments("--width", "" + Math.round(width));
                         opts.addArguments("--height", "" + Math.round(height));
                     }
+                } else if (PROXY_AUTOCONFIG_URL != null && caps instanceof EdgeOptions) {
+                    EdgeOptions edgeOptions = (EdgeOptions)caps;
+                    edgeOptions.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
+
+                    List<String> args = new ArrayList<>();
+                    Map<String, Object> experimentalOptions = new HashMap<>();
+                    Map<String, Object> options = new TreeMap<>();
+
+                    args.add("--proxy-pac-url=" + PROXY_AUTOCONFIG_URL);
+                    args.add("--always-authorize-plugins");
+                    args.add("--disable-gpu");
+                    args.add("--no-sandbox");
+                    args.add("--whitelisted-ips");
+                    args.add("--enable-precise-memory-info");
+                    args.add("--ignore-certificate-errors");
+
+                    if (PROFILE_DIR != null)
+                        args.add("--user-data-dir=" + PROFILE_DIR);
+                    args.add("--profile-directory=Profile" + GLOBAL_CLIENT_INDEX);
+
+                    args.add("--window-position=0,0");
+
+                    if(SCALE_FACTOR != null) {
+                        args.add("--force-device-scale-factor=" + SCALE_FACTOR);
+                    }
+
+                    if (DISPLAY_SIZE != null) {
+                        String[] screenSize = DISPLAY_SIZE.split("x", -1);
+                        Float width = Float.parseFloat(screenSize[0]);
+                        Float height = Float.parseFloat(screenSize[1]);
+
+                        if (SCALE_FACTOR != null) {
+                            width = width / Float.parseFloat(SCALE_FACTOR);
+                            height = height / Float.parseFloat(SCALE_FACTOR);
+                        }
+
+                        args.add("--window-size=" + Math.round(width) + "," + Math.round(height));
+                    }
+
+                    if(USER_AGENT != null){
+                        String[] screenSize = DISPLAY_SIZE.split("x", -1);
+                        Float width = Float.parseFloat(screenSize[0]);
+                        Float height = Float.parseFloat(screenSize[1]);
+
+                        Map<String, Object> deviceMetrics = new HashMap<>();
+
+                        if (SCALE_FACTOR != null) {
+                            width = width / Float.parseFloat(SCALE_FACTOR);
+                            height = height / Float.parseFloat(SCALE_FACTOR);
+                            deviceMetrics.put("width", Math.round(width));
+                            deviceMetrics.put("height", Math.round(height));
+                            deviceMetrics.put("pixelRatio", Float.parseFloat(SCALE_FACTOR));
+                        }
+
+                        Map<String, Object> mobileEmulation = new HashMap<>();
+                        mobileEmulation.put("deviceMetrics", deviceMetrics);
+                        mobileEmulation.put("userAgent", USER_AGENT);
+
+                        options.put("mobileEmulation", mobileEmulation);
+                    }
+
+                    if (EDGE_BINARY_PATH != null)
+                        options.put("binary", EDGE_BINARY_PATH);
+
+                    options.put("args", ImmutableList.copyOf(args));
+
+                    edgeOptions.setCapability("ms:edgeOptions", options);
                 }
             }
             int port = SELENIUM_PORT > 0 ? SELENIUM_PORT : 4444;
