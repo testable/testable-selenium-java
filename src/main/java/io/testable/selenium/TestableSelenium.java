@@ -100,7 +100,7 @@ public class TestableSelenium {
                 else if (browserName.equals(BrowserType.EDGE))
                     caps = new EdgeOptions();
                 else
-                    throw new RuntimeException("Currently only Chrome and Firefox are supported on Testable");
+                    throw new RuntimeException("Currently only Chrome, Firefox and Edge are supported on Testable");
                 caps.merge(desiredCapabilities);
             } else {
                 caps = capabilities;
