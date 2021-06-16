@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Main entry point for creating a selenium driver for use on the Testable platform as well as a set of useful
@@ -39,6 +40,9 @@ public class TestableSelenium {
     public static final String PROFILE_DIR = System.getProperty("TESTABLE_PROFILE_DIR");
     public static final String RESULT_FILE = System.getProperty("TESTABLE_RESULT_FILE");
 
+    public static final String DISPLAY_SIZE = System.getProperty("DISPLAY_SIZE");
+    public static final String USER_AGENT = System.getProperty("USER_AGENT");
+    public static final String SCALE_FACTOR = System.getProperty("SCALE_FACTOR");
 
     private static String RUM_SPEEDINDEXJS;
     static {
@@ -105,6 +109,51 @@ public class TestableSelenium {
                     if (PROFILE_DIR != null)
                         opts.addArguments("--user-data-dir=" + PROFILE_DIR);
                     opts.addArguments("--profile-directory=Profile" + GLOBAL_CLIENT_INDEX);
+
+                    opts.addArguments("--window-position=0,0");
+
+                    if(SCALE_FACTOR != null) {
+                        opts.addArguments("--force-device-scale-factor=" + SCALE_FACTOR);
+                        opts.addArguments("--high-dpi-support=" + SCALE_FACTOR);
+                    }
+
+                    if (DISPLAY_SIZE != null) {
+                        String[] screenSize = DISPLAY_SIZE.split("x", -1);
+                        Float width = Float.parseFloat(screenSize[0]);
+                        Float height = Float.parseFloat(screenSize[1]);
+
+                        if (SCALE_FACTOR != null) {
+                            width = width / Float.parseFloat(SCALE_FACTOR);
+                            height = height / Float.parseFloat(SCALE_FACTOR);
+                        }
+
+                        opts.addArguments("--window-size=" + Math.round(width) + "," + Math.round(height));
+                    }
+
+                    if(USER_AGENT != null){
+                        String[] screenSize = DISPLAY_SIZE.split("x", -1);
+                        Float width = Float.parseFloat(screenSize[0]);
+                        Float height = Float.parseFloat(screenSize[1]);
+
+                        if (SCALE_FACTOR != null) {
+                            width = width / Float.parseFloat(SCALE_FACTOR);
+                            height = height / Float.parseFloat(SCALE_FACTOR);
+                        }
+
+                        Map<String, Object> deviceMetrics = new HashMap<>();
+
+                        deviceMetrics.put("width", Math.round(width));
+                        deviceMetrics.put("height", Math.round(height));
+
+                        deviceMetrics.put("pixelRatio", Float.parseFloat(SCALE_FACTOR));
+
+                        Map<String, Object> mobileEmulation = new HashMap<>();
+                        mobileEmulation.put("deviceMetrics", deviceMetrics);
+                        mobileEmulation.put("userAgent", USER_AGENT);
+
+                        opts.setExperimentalOption("mobileEmulation", mobileEmulation);
+                    }
+
                     if (CHROME_BINARY_PATH != null)
                         opts.setBinary(CHROME_BINARY_PATH);
                 } else if (caps instanceof FirefoxOptions) {
@@ -127,6 +176,26 @@ public class TestableSelenium {
                     opts.addPreference("services.sync.prefs.sync.browser.newtabpage.activity-stream.feeds.snippets", false);
                     if (FIREFOX_BINARY_PATH != null)
                         opts.setBinary(FIREFOX_BINARY_PATH);
+
+                    if(USER_AGENT != null){
+                        opts.addPreference("general.useragent.override", USER_AGENT);
+                        opts.addPreference("layout.css.devPixelsPerPx", SCALE_FACTOR);
+                    }
+
+                    if (DISPLAY_SIZE != null) {
+                        String[] screenSize = DISPLAY_SIZE.split("x", -1);
+
+                        Float width = Float.parseFloat(screenSize[0]);
+                        Float height = Float.parseFloat(screenSize[1]);
+
+                        if (SCALE_FACTOR != null) {
+                            width = width / Float.parseFloat(SCALE_FACTOR);
+                            height = height / Float.parseFloat(SCALE_FACTOR);
+                        }
+
+                        opts.addArguments("--width", "" + Math.round(width));
+                        opts.addArguments("--height", "" + Math.round(height));
+                    }
                 }
             }
             int port = SELENIUM_PORT > 0 ? SELENIUM_PORT : 4444;
