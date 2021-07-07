@@ -1,5 +1,5 @@
 group 'io.testable'
-version '0.0.12'
+version '0.0.14'
 
 buildscript {
     repositories {
@@ -20,6 +20,7 @@ dependencies {
     compile 'org.seleniumhq.selenium:selenium-java:3.11.0'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.11.1'
     compile 'org.apache.commons:commons-csv:1.5'
+    compile 'com.squareup.okhttp3:okhttp:3.11.0'
     testCompile 'junit:junit:4.13'
 }
 
