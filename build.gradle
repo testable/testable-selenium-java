@@ -17,7 +17,9 @@ repositories {
 }
 
 dependencies {
-    compile 'org.seleniumhq.selenium:selenium-java:3.11.0'
+    compile('org.seleniumhq.selenium:selenium-java:3.11.0'){
+        exclude group: 'net.bytebuddy', module: 'byte-buddy'
+    }
     compile 'com.fasterxml.jackson.core:jackson-databind:2.11.1'
     compile 'org.apache.commons:commons-csv:1.5'
     compile 'com.squareup.okhttp3:okhttp:3.11.0'
