@@ -11,6 +11,9 @@ buildscript {
 }
 apply plugin: 'io.codearte.nexus-staging'
 apply plugin: 'java'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -107,4 +110,10 @@ if (project.hasProperty('release')) {
 nexusStaging {
     username = ossrhUser
     password = ossrhPassword
+}
+
+idea {
+    project {
+        languageLevel = '1.8'
+    }
 }
