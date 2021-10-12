@@ -52,10 +52,10 @@ public class TestableTest {
     /**
      * Indicates that the test step previously started with startStep(name) finished with an exception.
      *
-     * @param e The exception that occurred while running the test step.
+     * @param t The error that occurred while running the test step.
      */
-    public void finishFailedStep(Exception e) {
-        finishStep(TestableFinishSuiteTest.failed(currentTest, e));
+    public void finishFailedStep(Throwable t) {
+        finishStep(TestableFinishSuiteTest.failed(currentTest, t));
     }
 
     /**
@@ -93,12 +93,12 @@ public class TestableTest {
      *
      * @param assertion The assertion description
      * @param duration The duration it took to run assertion related code, can be 0.
-     * @param e The exception that occurred
+     * @param t The error that occurred
      */
-    public void assertionFailed(String assertion, long duration, Exception e) {
+    public void assertionFailed(String assertion, long duration, Throwable t) {
         currentTest = new TestableStartSuiteTest(startSuite, assertion, System.currentTimeMillis() - duration);
         write("StartSuiteTest", currentTest);
-        finishStep(TestableFinishSuiteTest.failed(currentTest, e));
+        finishStep(TestableFinishSuiteTest.failed(currentTest, t));
     }
 
     /**
