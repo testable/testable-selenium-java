@@ -16,14 +16,18 @@ public class TestableFinishSuiteTest {
     private final String error;
     private final String errorTrace;
 
-    private TestableFinishSuiteTest(TestableStartSuiteTest startSuiteTest, boolean passed, Throwable t, boolean captureTrace) {
+    private TestableFinishSuiteTest(TestableStartSuiteTest startSuiteTest,
+                                    boolean passed,
+                                    Throwable t,
+                                    boolean captureTrace,
+                                    boolean skipped) {
         this.suiteUuid = startSuiteTest.getSuiteUuid();
         this.suiteName = startSuiteTest.getSuiteName();
         this.uuid = startSuiteTest.getUuid();
         this.name = startSuiteTest.getName();
         this.finished = startSuiteTest.getStarted() > 0 ? System.currentTimeMillis() : 0;
         this.duration = startSuiteTest.getStarted() > 0 ? this.finished - startSuiteTest.getStarted() : 0;
-        this.state = t != null ? "failed": "passed";
+        this.state = t!= null ? "failed": (skipped ? "skipped" : (passed ? "passed" : "na"));
         if (t != null) {
             this.errorType = t.getClass().getSimpleName();
             this.error = t.getMessage();
@@ -43,15 +47,19 @@ public class TestableFinishSuiteTest {
     }
 
     public static TestableFinishSuiteTest passed(TestableStartSuiteTest startSuiteTest) {
-        return new TestableFinishSuiteTest(startSuiteTest, true, null, false);
+        return new TestableFinishSuiteTest(startSuiteTest, true, null, false, false);
+    }
+
+    public static TestableFinishSuiteTest skipped(TestableStartSuiteTest startSuiteTest) {
+        return new TestableFinishSuiteTest(startSuiteTest, false, null, false, true);
     }
 
     public static TestableFinishSuiteTest failed(TestableStartSuiteTest startSuiteTest, Throwable t) {
-        return new TestableFinishSuiteTest(startSuiteTest, false, t, true);
+        return new TestableFinishSuiteTest(startSuiteTest, false, t, true, false);
     }
 
     public static TestableFinishSuiteTest failed(TestableStartSuiteTest startSuiteTest, String msg) {
-        return new TestableFinishSuiteTest(startSuiteTest, false, new Exception(msg), false);
+        return new TestableFinishSuiteTest(startSuiteTest, false, new Exception(msg), false, false);
     }
 
     public String getSuiteUuid() { return suiteUuid; }

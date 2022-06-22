@@ -50,6 +50,17 @@ public class TestableTest {
     }
 
     /**
+     * Indicates that the test step finished successfully. Includes the name in case this step was never started.
+     *
+     * @param name Name of the test step
+     */
+    public void finishSkippedStep(String name) {
+        if (currentTest == null || !currentTest.getName().equals(name))
+            startStep(name);
+        finishStep(TestableFinishSuiteTest.skipped(currentTest));
+    }
+
+    /**
      * Indicates that the test step previously started with startStep(name) finished with an exception.
      *
      * @param t The error that occurred while running the test step.
