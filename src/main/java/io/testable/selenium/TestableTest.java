@@ -6,6 +6,8 @@ package io.testable.selenium;
  */
 public class TestableTest {
 
+    private static final boolean IGNORE_SKIPS = Boolean.getBoolean("testable_ignore_skips");
+
     private final TestableStartSuite startSuite;
     private TestableStartSuiteTest currentTest = null;
     private boolean hasError = false;
@@ -55,7 +57,10 @@ public class TestableTest {
      * @param name Name of the test step
      */
     public void finishSkippedStep(String name) {
-        if (currentTest == null || !currentTest.getName().equals(name))
+        boolean hasNotStarted = currentTest == null || !currentTest.getName().equals(name);
+        if (hasNotStarted && IGNORE_SKIPS)
+            return;
+        if (hasNotStarted)
             startStep(name);
         finishStep(TestableFinishSuiteTest.skipped(currentTest));
     }
