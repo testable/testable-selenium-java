@@ -1,16 +1,9 @@
 package io.testable.selenium;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,19 +18,14 @@ import java.util.List;
  */
 public class TestableCSVReader {
 
-    private static final String BASE_URL = System.getProperty("TESTABLE_BASE_URL");
-    private static final String AGENT_KEY = System.getProperty("TESTABLE_KEY");
-    private static final long EXECUTION_ID = Long.getLong("TESTABLE_EXECUTION_ID", -1);
-    private static final long CHUNK_ID = Long.getLong("TESTABLE_CHUNK_ID", -1);
+    private static final int GLOBAL_CLIENT_INDEX = Integer.getInteger("TESTABLE_GLOBAL_CLIENT_INDEX", 0);
+    private static final int ITERATION = Integer.getInteger("TESTABLE_ITERATION", 0);
+    private static final int CONCURRENT_CLIENTS = Integer.getInteger("TESTABLE_CONCURRENT_CLIENTS", 1);
 
-    private String name;
-    private String nameForIterator;
     private List<CSVRecord> records;
-    private int index = 0;
+    private int index = CONCURRENT_CLIENTS * ITERATION + GLOBAL_CLIENT_INDEX;
 
     public TestableCSVReader(String path) throws IOException {
-        this.name = path;
-        this.nameForIterator = this.name.replace(".", "").replace("/", "");
         InputStream fileIs = this.getClass().getClassLoader().getResourceAsStream(path);
         CSVParser parser = CSVParser.parse(fileIs, StandardCharsets.UTF_8, CSVFormat.DEFAULT.withFirstRecordAsHeader());
         this.records = parser.getRecords();
@@ -50,7 +38,21 @@ public class TestableCSVReader {
      * @return A row record
      */
     public CSVRecord get(int index) {
-        return this.records.get(index);
+        return this.records.get(index % this.records.size());
+    }
+
+    /**
+     * Get a row from the file by index (zero based).
+     *
+     * @param index The row index to load. The first row in the file after the header row is row 0.
+     * @param wrap If true once the last row is reached loop back to the first row. If false a
+     *        {@link ClientProtocolException} is thrown when the end of the file is reached.
+     * @return A row record
+     */
+    public CSVRecord get(int index, boolean wrap) throws IOException {
+        if (!wrap && index >= this.records.size())
+            throw new ClientProtocolException("End of CSV reached");
+        return this.records.get(index % this.records.size());
     }
 
     /**
@@ -114,51 +116,8 @@ public class TestableCSVReader {
      */
     public List<CSVRecord> next(int rows, boolean wrap) throws IOException {
         List<CSVRecord> records = new ArrayList<>(rows);
-        if (CHUNK_ID < 0) {
-            for(int i = 0; i < rows; i++) {
-                records.add(get(index));
-                if (index == this.records.size() - 1)
-                    index = 0;
-                else
-                    index++;
-            }
-        } else {
-            CloseableHttpClient httpClient = HttpClients.createDefault();
-            try {
-                this.name.replace(".", "").replace("/", "");
-                StringBuilder sb = new StringBuilder();
-                sb.append(BASE_URL)
-                        .append("/rows/iterators/executions.")
-                        .append(EXECUTION_ID)
-                        .append(".")
-                        .append(nameForIterator)
-                        .append("/by-index?wrap=")
-                        .append(wrap)
-                        .append("&rows=")
-                        .append(rows)
-                        .append("&length=")
-                        .append(this.records.size())
-                        .append("&key=")
-                        .append(AGENT_KEY);
-                HttpGet requestIndices = new HttpGet(sb.toString());
-                ResponseHandler<String> responseHandler = response -> {
-                    int status = response.getStatusLine().getStatusCode();
-                    if (status >= 200 && status < 300) {
-                        HttpEntity entity = response.getEntity();
-                        return entity != null ? EntityUtils.toString(entity) : null;
-                    } else {
-                        throw new ClientProtocolException("Unexpected response status: " + status);
-                    }
-                };
-                String body = httpClient.execute(requestIndices, responseHandler);
-                ObjectMapper mapper = new ObjectMapper();
-                int[] indices = mapper.readValue(body, int[].class);
-                for (int nextIndex : indices) {
-                    records.add(get(nextIndex));
-                }
-            } finally {
-                httpClient.close();
-            }
+        for(int i = 0; i < rows; i++) {
+            records.add(get(index++, wrap));
         }
         return records;
     }
