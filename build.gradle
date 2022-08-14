@@ -20,10 +20,10 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.seleniumhq.selenium:selenium-java:3.11.0'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.1'
-    implementation 'org.apache.commons:commons-csv:1.5'
-    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    compile 'org.seleniumhq.selenium:selenium-java:3.11.0'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.11.1'
+    compile 'org.apache.commons:commons-csv:1.5'
+    compile 'com.squareup.okhttp3:okhttp:3.11.0'
     testImplementation 'junit:junit:4.13'
 }
 
@@ -98,11 +98,6 @@ if (project.hasProperty('release')) {
                                 name = 'Avi Stramer'
                                 email = 'avi@testable.io'
                             }
-                        }
-                    }
-                    pom.whenConfigured { pom ->
-                        pom.dependencies.findAll { dependency ->
-                            dependency.scope = 'compile'
                         }
                     }
                 }
