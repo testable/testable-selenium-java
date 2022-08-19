@@ -3,7 +3,6 @@ package io.testable.selenium;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.http.client.ClientProtocolException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,12 +45,12 @@ public class TestableCSVReader {
      *
      * @param index The row index to load. The first row in the file after the header row is row 0.
      * @param wrap If true once the last row is reached loop back to the first row. If false a
-     *        {@link ClientProtocolException} is thrown when the end of the file is reached.
+     *        RuntimeException is thrown when the end of the file is reached.
      * @return A row record
      */
-    public CSVRecord get(int index, boolean wrap) throws IOException {
+    public CSVRecord get(int index, boolean wrap) {
         if (!wrap && index >= this.records.size())
-            throw new ClientProtocolException("End of CSV reached");
+            throw new RuntimeException("End of CSV reached");
         return this.records.get(index % this.records.size());
     }
 
@@ -82,11 +81,11 @@ public class TestableCSVReader {
      * and test runners. This ensures that the rows in the file are evenly distributed across your virtual users.
      *
      * @param wrap If true once the last row is reached loop back to the first row. If false a
-     * {@link ClientProtocolException} is thrown when the end of the file is reached.
+     *             RuntimeException is thrown when the end of the file is reached.
      * @return The next row record
      * @throws IOException
      */
-    public CSVRecord next(boolean wrap) throws IOException {
+    public CSVRecord next(boolean wrap) {
         return next(1, wrap).get(0);
     }
 
@@ -110,11 +109,11 @@ public class TestableCSVReader {
      *
      * @param rows Number of rows to return
      * @param wrap If true once the last row is reached loop back to the first row. If false a
-     * {@link ClientProtocolException} is thrown when the end of the file is reached.
+     *             RuntimeException is thrown when the end of the file is reached.
      * @return
      * @throws IOException
      */
-    public List<CSVRecord> next(int rows, boolean wrap) throws IOException {
+    public List<CSVRecord> next(int rows, boolean wrap) {
         List<CSVRecord> records = new ArrayList<>(rows);
         for(int i = 0; i < rows; i++) {
             records.add(get(index++, wrap));
