@@ -21,6 +21,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
@@ -296,7 +297,7 @@ public class TestableSelenium {
         try {
             File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
             if (OUTPUT_DIR != null) {
-                return Files.copy(screenshot.toPath(), Paths.get(OUTPUT_DIR, toName(name)));
+                return Files.copy(screenshot.toPath(), Paths.get(OUTPUT_DIR, toName(name)), StandardCopyOption.REPLACE_EXISTING);
             } else {
                 return screenshot.toPath();
             }

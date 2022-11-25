@@ -83,7 +83,6 @@ public class TestableCSVReader {
      * @param wrap If true once the last row is reached loop back to the first row. If false a
      *             RuntimeException is thrown when the end of the file is reached.
      * @return The next row record
-     * @throws IOException
      */
     public CSVRecord next(boolean wrap) {
         return next(1, wrap).get(0);
@@ -111,7 +110,6 @@ public class TestableCSVReader {
      * @param wrap If true once the last row is reached loop back to the first row. If false a
      *             RuntimeException is thrown when the end of the file is reached.
      * @return
-     * @throws IOException
      */
     public List<CSVRecord> next(int rows, boolean wrap) {
         List<CSVRecord> records = new ArrayList<>(rows);
