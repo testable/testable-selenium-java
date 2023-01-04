@@ -39,33 +39,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class TestableSelenium {
 
     public static final int SELENIUM_PORT = Integer.getInteger("SELENIUM_PORT", -1);
+    public static final int CHROMEDRIVER_PORT = Integer.getInteger("CHROMEDRIVER_PORT", -1);
+    public static final String SELENIUM_REMOTE_URL = System.getProperty("SELENIUM_REMOTE_URL");
     public static final String OUTPUT_DIR = System.getProperty("OUTPUT_DIR");
     public static final String REGION_NAME = System.getProperty("TESTABLE_REGION_NAME");
     public static final String GLOBAL_CLIENT_INDEX = System.getProperty("TESTABLE_GLOBAL_CLIENT_INDEX");
     public static final String ITERATION = System.getProperty("TESTABLE_ITERATION");
-    public static final String PROXY_AUTOCONFIG_URL = System.getProperty("PROXY_AUTOCONFIG_URL");
-    public static final String CHROME_BINARY_PATH = System.getProperty("CHROME_BINARY_PATH");
-    public static final String FIREFOX_BINARY_PATH = System.getProperty("FIREFOX_BINARY_PATH");
-    public static final String EDGE_BINARY_PATH = System.getProperty("EDGE_BINARY_PATH");
-    public static final String PROFILE_DIR = System.getProperty("TESTABLE_PROFILE_DIR");
     public static final String RESULT_FILE = System.getProperty("TESTABLE_RESULT_FILE");
-
-    public static final String DISPLAY_SIZE = System.getProperty("DISPLAY_SIZE");
-    public static final String USER_AGENT = System.getProperty("USER_AGENT");
-    public static final String SCALE_FACTOR = System.getProperty("SCALE_FACTOR");
-
-    private static String RUM_SPEEDINDEXJS;
-    static {
-        try {
-            URL url = Resources.getResource("rum-speedindex.js");
-            RUM_SPEEDINDEXJS = Resources.toString(url, Charsets.UTF_8);
-        } catch(Exception e) {
-            System.out.println("Issue reading rum-speedindex.js from file");
-            e.printStackTrace();
-            RUM_SPEEDINDEXJS = null;
-        }
-    }
-
 
     private static PrintWriter resultStream;
     static {
@@ -78,205 +58,28 @@ public class TestableSelenium {
         }
     }
 
+    private static String WEBDRIVER_URL;
+    static {
+        if (SELENIUM_REMOTE_URL != null)
+            WEBDRIVER_URL = SELENIUM_REMOTE_URL;
+        else if (CHROMEDRIVER_PORT > 0)
+            WEBDRIVER_URL = "http://localhost:" + CHROMEDRIVER_PORT;
+        else
+            WEBDRIVER_URL = "http://localhost:" + (SELENIUM_PORT > 0 ? SELENIUM_PORT : 4444) + "/wd/hub";
+    }
+
     /**
      * Create a {@link RemoteWebDriver} instance that is compatible with Testable. All this means is that the URL
      * will be http://localhost:[port]/wd/hub where [port] is passed from Testable to the Selenium process as
-     * the SELENIUM_PORT system property. When run locally outside Testable, the default Selenium port (4444) is used.
+     * the SELENIUM_PORT system property or http://localhost:[port] in cases where Testable is expecting to use
+     * chromedriver directly (e.g. OpenFin). When run locally outside Testable, the default Selenium port (4444) is used.
      *
      * @param capabilities Capabilities to utilize
      * @return A WebDriver instance that is compatible with the local Testable Selenium instance.
      */
     public static WebDriver newWebDriver(Capabilities capabilities) {
         try {
-            Capabilities caps;
-            if (capabilities instanceof DesiredCapabilities) {
-                DesiredCapabilities desiredCapabilities = (DesiredCapabilities) capabilities;
-                String browserName = desiredCapabilities.getBrowserName();
-                if (browserName == null)
-                    throw new RuntimeException("DesiredCapabilities with no browser passed");
-                if (browserName.equals(BrowserType.CHROME))
-                    caps = new ChromeOptions();
-                else if (browserName.equals(BrowserType.FIREFOX))
-                    caps = new FirefoxOptions();
-                else if (browserName.equals(BrowserType.EDGE))
-                    caps = new EdgeOptions();
-                else
-                    throw new RuntimeException("Currently only Chrome, Firefox and Edge are supported on Testable");
-                caps.merge(desiredCapabilities);
-            } else {
-                caps = capabilities;
-            }
-            if (caps instanceof MutableCapabilities) {
-                if (PROXY_AUTOCONFIG_URL != null && caps instanceof ChromeOptions) {
-                    ChromeOptions opts = (ChromeOptions)caps;
-                    opts.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
-                    opts.addArguments(
-                            "--proxy-pac-url=" + PROXY_AUTOCONFIG_URL,
-                            "--always-authorize-plugins",
-                            "--disable-gpu",
-                            "--no-sandbox",
-                            "--whitelisted-ips",
-                            "--enable-precise-memory-info",
-                            "--ignore-certificate-errors");
-                    if (PROFILE_DIR != null)
-                        opts.addArguments("--user-data-dir=" + PROFILE_DIR);
-                    opts.addArguments("--profile-directory=Profile" + GLOBAL_CLIENT_INDEX);
-
-                    opts.addArguments("--window-position=0,0");
-
-                    if(SCALE_FACTOR != null) {
-                        opts.addArguments("--force-device-scale-factor=" + SCALE_FACTOR);
-                        opts.addArguments("--high-dpi-support=" + SCALE_FACTOR);
-                    }
-
-                    if (DISPLAY_SIZE != null) {
-                        String[] screenSize = DISPLAY_SIZE.split("x", -1);
-                        Float width = Float.parseFloat(screenSize[0]);
-                        Float height = Float.parseFloat(screenSize[1]);
-
-                        if (SCALE_FACTOR != null) {
-                            width = width / Float.parseFloat(SCALE_FACTOR);
-                            height = height / Float.parseFloat(SCALE_FACTOR);
-                        }
-
-                        opts.addArguments("--window-size=" + Math.round(width) + "," + Math.round(height));
-                    }
-
-                    if(USER_AGENT != null){
-                        String[] screenSize = DISPLAY_SIZE.split("x", -1);
-                        Float width = Float.parseFloat(screenSize[0]);
-                        Float height = Float.parseFloat(screenSize[1]);
-
-                        Map<String, Object> mobileEmulation = new HashMap<>();
-                        Map<String, Object> deviceMetrics = new HashMap<>();
-
-                        if (SCALE_FACTOR != null) {
-                            width = width / Float.parseFloat(SCALE_FACTOR);
-                            height = height / Float.parseFloat(SCALE_FACTOR);
-
-                            deviceMetrics.put("width", Math.round(width));
-                            deviceMetrics.put("height", Math.round(height));
-                            deviceMetrics.put("pixelRatio", Float.parseFloat(SCALE_FACTOR));
-                        }
-                        mobileEmulation.put("deviceMetrics", deviceMetrics);
-                        mobileEmulation.put("userAgent", USER_AGENT);
-
-                        opts.setExperimentalOption("mobileEmulation", mobileEmulation);
-                    }
-
-                    if (CHROME_BINARY_PATH != null)
-                        opts.setBinary(CHROME_BINARY_PATH);
-                } else if (caps instanceof FirefoxOptions) {
-                    FirefoxOptions opts = (FirefoxOptions)caps;
-                    opts.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
-                    opts.addPreference("browser.tabs.remote.autostart", false);
-                    opts.addPreference("browser.tabs.remote.autostart.2", false);
-                    opts.addPreference("dom.webnotifications.enabled", false);
-                    opts.addPreference("dom.push.connection.enabled", false);
-                    opts.addPreference("dom.push.enabled", false);
-                    opts.addPreference("dom.push.alwaysConnect", false);
-                    if (PROXY_AUTOCONFIG_URL != null) {
-                        opts.addPreference("network.proxy.type", 2);
-                        opts.addPreference("network.proxy.autoconfig_url", PROXY_AUTOCONFIG_URL);
-                    }
-                    opts.addPreference("browser.startup.page", 0);
-                    opts.addPreference("network.captive-portal-service.enabled", false);
-                    opts.addPreference("browser.newtabpage.activity-stream.disableSnippets", true);
-                    opts.addPreference("browser.newtabpage.activity-stream.feeds.snippets", false);
-                    opts.addPreference("services.sync.prefs.sync.browser.newtabpage.activity-stream.feeds.snippets", false);
-                    if (FIREFOX_BINARY_PATH != null)
-                        opts.setBinary(FIREFOX_BINARY_PATH);
-
-                    if(USER_AGENT != null){
-                        opts.addPreference("general.useragent.override", USER_AGENT);
-                        opts.addPreference("layout.css.devPixelsPerPx", SCALE_FACTOR);
-                    }
-
-                    if (DISPLAY_SIZE != null) {
-                        String[] screenSize = DISPLAY_SIZE.split("x", -1);
-
-                        Float width = Float.parseFloat(screenSize[0]);
-                        Float height = Float.parseFloat(screenSize[1]);
-
-                        if (SCALE_FACTOR != null) {
-                            width = width / Float.parseFloat(SCALE_FACTOR);
-                            height = height / Float.parseFloat(SCALE_FACTOR);
-                        }
-
-                        opts.addArguments("--width", "" + Math.round(width));
-                        opts.addArguments("--height", "" + Math.round(height));
-                    }
-                } else if (PROXY_AUTOCONFIG_URL != null && caps instanceof EdgeOptions) {
-                    EdgeOptions edgeOptions = (EdgeOptions)caps;
-                    edgeOptions.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
-
-                    List<String> args = new ArrayList<>();
-                    Map<String, Object> experimentalOptions = new HashMap<>();
-                    Map<String, Object> options = new TreeMap<>();
-
-                    args.add("--proxy-pac-url=" + PROXY_AUTOCONFIG_URL);
-                    args.add("--always-authorize-plugins");
-                    args.add("--disable-gpu");
-                    args.add("--no-sandbox");
-                    args.add("--whitelisted-ips");
-                    args.add("--enable-precise-memory-info");
-                    args.add("--ignore-certificate-errors");
-
-                    if (PROFILE_DIR != null)
-                        args.add("--user-data-dir=" + PROFILE_DIR);
-                    args.add("--profile-directory=Profile" + GLOBAL_CLIENT_INDEX);
-
-                    args.add("--window-position=0,0");
-
-                    if(SCALE_FACTOR != null) {
-                        args.add("--force-device-scale-factor=" + SCALE_FACTOR);
-                    }
-
-                    if (DISPLAY_SIZE != null) {
-                        String[] screenSize = DISPLAY_SIZE.split("x", -1);
-                        Float width = Float.parseFloat(screenSize[0]);
-                        Float height = Float.parseFloat(screenSize[1]);
-
-                        if (SCALE_FACTOR != null) {
-                            width = width / Float.parseFloat(SCALE_FACTOR);
-                            height = height / Float.parseFloat(SCALE_FACTOR);
-                        }
-
-                        args.add("--window-size=" + Math.round(width) + "," + Math.round(height));
-                    }
-
-                    if(USER_AGENT != null){
-                        String[] screenSize = DISPLAY_SIZE.split("x", -1);
-                        Float width = Float.parseFloat(screenSize[0]);
-                        Float height = Float.parseFloat(screenSize[1]);
-
-                        Map<String, Object> deviceMetrics = new HashMap<>();
-
-                        if (SCALE_FACTOR != null) {
-                            width = width / Float.parseFloat(SCALE_FACTOR);
-                            height = height / Float.parseFloat(SCALE_FACTOR);
-                            deviceMetrics.put("width", Math.round(width));
-                            deviceMetrics.put("height", Math.round(height));
-                            deviceMetrics.put("pixelRatio", Float.parseFloat(SCALE_FACTOR));
-                        }
-
-                        Map<String, Object> mobileEmulation = new HashMap<>();
-                        mobileEmulation.put("deviceMetrics", deviceMetrics);
-                        mobileEmulation.put("userAgent", USER_AGENT);
-
-                        options.put("mobileEmulation", mobileEmulation);
-                    }
-
-                    if (EDGE_BINARY_PATH != null)
-                        options.put("binary", EDGE_BINARY_PATH);
-
-                    options.put("args", ImmutableList.copyOf(args));
-
-                    edgeOptions.setCapability("ms:edgeOptions", options);
-                }
-            }
-            int port = SELENIUM_PORT > 0 ? SELENIUM_PORT : 4444;
-            return new RemoteWebDriver(new URL("http://localhost:" + port + "/wd/hub"), caps);
+            return new RemoteWebDriver(new URL(WEBDRIVER_URL), capabilities);
         } catch (MalformedURLException e) {
             throw new WebDriverException(e);
         }
@@ -349,22 +152,6 @@ public class TestableSelenium {
     public static void log(TestableLog.Level level, Throwable cause) {
         String msg = Throwables.getStackTraceAsString(cause);
         writeToStream(new Result("Log", new TestableLog(level, msg, System.currentTimeMillis())));
-    }
-
-    /**
-     * Collect some useful browser performance metrics by executing some Javascript in the browser. Metrics
-     * include: page load time, speed index, page requests, page weight, time to first byte, time to first paint,
-     * time to first contentful paint, and time to interactive.
-     *
-     * @param driver The WebDriver instance
-     */
-    public static Map<String,Object> collectPerformanceMetrics(WebDriver driver) {
-        if (RUM_SPEEDINDEXJS != null) {
-            Map<String, Object> results = (Map<String, Object>) ((JavascriptExecutor) driver).executeScript(RUM_SPEEDINDEXJS);
-            writeToStream(new Result("BrowserMetrics", results));
-            return results;
-        }
-        return Collections.emptyMap();
     }
 
     /**
